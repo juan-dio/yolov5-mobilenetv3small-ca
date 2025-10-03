@@ -56,6 +56,7 @@ from utils.general import (
 )
 from utils.torch_utils import copy_attr, smart_inference_mode
 
+from models.mobilenetv3small import MobileNetV3Small
 
 def autopad(k, p=None, d=1):
     """
@@ -1121,3 +1122,13 @@ class Classify(nn.Module):
         if isinstance(x, list):
             x = torch.cat(x, 1)
         return self.linear(self.drop(self.pool(self.conv(x)).flatten(1)))
+    
+
+class Select(nn.Module):
+    def __init__(self, index, channels):
+        super().__init__()
+        self.index = index
+        self.c2 = channels  # simpan channel output
+    
+    def forward(self, x):
+        return x[self.index]

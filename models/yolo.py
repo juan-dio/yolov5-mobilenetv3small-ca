@@ -48,6 +48,8 @@ from models.common import (
     GhostBottleneck,
     GhostConv,
     Proto,
+    MobileNetV3Small,
+    Select
 )
 from models.experimental import MixConv2d
 from utils.autoanchor import check_anchor_order
@@ -433,6 +435,14 @@ def parse_model(d, ch):
             args = [ch[f]]
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
+        elif m is Select:
+            idx = args[0]  # feature index
+            # ch[f] bisa list (kalau dari backbone return banyak output)
+            if isinstance(ch[f], list):
+                c2 = ch[f][idx]
+            else:
+                c2 = ch[f]
+            args = [idx, c2]
         # TODO: channel, gw, gd
         elif m in {Detect, Segment}:
             args.append([ch[x] for x in f])
@@ -444,6 +454,20 @@ def parse_model(d, ch):
             c2 = ch[f] * args[0] ** 2
         elif m is Expand:
             c2 = ch[f] // args[0] ** 2
+        elif m.__name__ == "MobileNetV3Small":
+            module_ = m(*args)
+            # test dummy forward untuk tahu channel out backbone
+            dummy = torch.zeros(1, ch[0], 256, 256)
+            outs = module_(dummy)
+            c2 = [o.shape[1] for o in outs]  # auto detect channel list
+            m_ = module_
+            m_.i, m_.f, m_.type, m_.np = i, f, m.__name__, sum(x.numel() for x in m_.parameters())
+            layers.append(m_)
+            LOGGER.info(f"{i:>3}{str(f):>18}{n_:>3}{m_.np:10.0f}  {m.__name__:<40}{str(args):<30}")
+            if i == 0:
+                ch = []
+            ch.append(c2)
+            continue
         else:
             c2 = ch[f]
 

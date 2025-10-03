@@ -1,14 +1,14 @@
-import torch
 import torch.nn as nn
 from torchvision.models import mobilenet_v3_small
 
+
 class MobileNetV3Small(nn.Module):
     def __init__(self, pretrained=True):
-        super(MobileNetV3Small, self).__init__()
+        super().__init__()
         model = mobilenet_v3_small(pretrained=pretrained)
 
         # hanya ambil feature extractor (tanpa avgpool & classifier)
-        self.features = model.features  
+        self.features = model.features
 
     def forward(self, x):
         # Indeks layer untuk mengambil feature map pada skala berbeda

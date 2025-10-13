@@ -48,8 +48,7 @@ from models.common import (
     GhostBottleneck,
     GhostConv,
     Proto,
-    MobileNetV3Small,
-    Select
+    Select,
 )
 from models.experimental import MixConv2d
 from utils.autoanchor import check_anchor_order

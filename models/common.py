@@ -57,6 +57,7 @@ from utils.general import (
 from utils.torch_utils import copy_attr, smart_inference_mode
 
 from models.mobilenetv3small import MobileNetV3Small
+from models.coordinate_attention import CoordAtt
 
 def autopad(k, p=None, d=1):
     """

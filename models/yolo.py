@@ -49,7 +49,8 @@ from models.common import (
     GhostConv,
     Proto,
     MobileNetV3Small,
-    Select
+    Select,
+    CoordAtt
 )
 from models.experimental import MixConv2d
 from utils.autoanchor import check_anchor_order

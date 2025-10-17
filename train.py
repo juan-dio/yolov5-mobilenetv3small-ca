@@ -25,9 +25,6 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from pathlib import Path
 
-os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
-os.environ["PYTORCH_DETERMINISTIC"] = "0"
-
 try:
     import comet_ml  # must be imported before torch (if installed)
 except ImportError:
@@ -40,21 +37,6 @@ import torch.nn as nn
 import yaml
 from torch.optim import lr_scheduler
 from tqdm import tqdm
-
-# ==== Fix for nondeterministic ops (Coordinate Attention issue) ====
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
-
-try:
-    torch.use_deterministic_algorithms(False)
-except Exception as e:
-    print("Warning: could not disable deterministic mode:", e)
-
-torch.backends.cudnn.deterministic = False
-torch.backends.cudnn.benchmark = True
-os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
-# ===============================================================
-
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -218,7 +200,7 @@ def train(hyp, opt, device, callbacks):
     # Config
     plots = not evolve and not opt.noplots  # create plots
     cuda = device.type != "cpu"
-    init_seeds(opt.seed + 1 + RANK, deterministic=True)
+    init_seeds(opt.seed + 1 + RANK, deterministic=False)
     with torch_distributed_zero_first(LOCAL_RANK):
         data_dict = data_dict or check_dataset(data)  # check if None
     train_path, val_path = data_dict["train"], data_dict["val"]

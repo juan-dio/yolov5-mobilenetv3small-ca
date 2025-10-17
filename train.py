@@ -25,6 +25,9 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from pathlib import Path
 
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+os.environ["PYTORCH_DETERMINISTIC"] = "0"
+
 try:
     import comet_ml  # must be imported before torch (if installed)
 except ImportError:
@@ -38,10 +41,20 @@ import yaml
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-# Fix for nondeterministic ops (Coordinate Attention issue)
-torch.use_deterministic_algorithms(False)
+# ==== Fix for nondeterministic ops (Coordinate Attention issue) ====
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
+try:
+    torch.use_deterministic_algorithms(False)
+except Exception as e:
+    print("Warning: could not disable deterministic mode:", e)
+
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = True
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+# ===============================================================
+
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
